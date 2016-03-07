@@ -12,8 +12,9 @@ Start server for the rest API:
 npm run server
 ```
 
-```
 Start webpack-dev-server for building:
+
+
 ```sh
 npm run watch
 ```
