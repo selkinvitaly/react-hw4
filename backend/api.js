@@ -2,13 +2,12 @@
 
 let router = require("express").Router();
 let mocks = require("./mock");
-let assign = require("object-assign");
 
 router.get("/article", function (req, res, next) {
   let articles = withComments(mocks.articles).map(function (article) {
-    return assign({}, article, {
+    return Object.assign({}, article, {
       text: undefined
-    })
+    });
   }),
     limit = Number(req.query.limit) || articles.length,
     offset = Number(req.query.offset) || 0;

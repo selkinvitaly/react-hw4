@@ -1,14 +1,16 @@
 "use strict";
 
-import {articles, comments} from "../data";
-import ArticleStore from "./ArticleStore"
-import CommentStore from "./CommentStore"
+import ArticleStore from "./ArticleStore";
+import CommentStore from "./CommentStore";
 
-let stores = {}
+let stores = {};
+
 Object.assign(stores, {
-  articles: new ArticleStore(stores, articles),
-  comments: new CommentStore(stores, comments)
+  articles: new ArticleStore(stores),
+  comments: new CommentStore(stores)
 });
 
+window.stores = stores; // dev
+
 export const articlesStore = stores.articles;
-export const commentStore = stores.comments;
+export const commentsStore = stores.comments;

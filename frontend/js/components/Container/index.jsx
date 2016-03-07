@@ -2,39 +2,86 @@
 
 import React, { Component, PropTypes } from "react";
 import { articlesStore } from "../../stores/";
+import * as actions from "../../actions/articles";
 import ArticleList from "../ArticleList/";
 
 class Container extends Component {
 
   constructor() {
     super();
+
     this.state = {
-      articles: articlesStore.getAll()
+      articles: [],
+      loadedList: false,
+      loading: false
     };
-    this._changeHandler = null;
+
+    this._updateHandler = () => this.updateList();
+    this._errorHandler = (err) => this.showError(err);
+  }
+
+  updateList() {
+    this.setState({
+      articles: articlesStore.getAll(),
+      loadedList: true,
+      loading: false
+    });
+
+    console.log("updated articles"); // dev
+  }
+
+  showError(err) {
+    alert(err);
   }
 
   componentDidMount() {
-    this._changeHandler = () => this.change();
-    articlesStore.addChangeListener(this._changeHandler);
+    articlesStore.addUpdateListener(this._updateHandler);
+    articlesStore.addErrorListener(this._errorHandler);
   }
 
   componentWillUnmount() {
-    articlesStore.removeChangeListener(this._changeHandler);
+    articlesStore.removeUpdateListener(this._updateHandler);
+    articlesStore.removeErrorListener(this._errorHandler);
+  }
+
+  clickHandler() {
+    return e => {
+      if (this.state.loadedList || this.state.loading) {
+        return;
+      }
+
+      this.setState({
+        loading: true
+      });
+
+      actions.getArticles();
+    };
+  }
+
+  getButton() {
+    const style = {
+      border: "1px solid #ccc",
+      backgroundColor: "#f6f6f6",
+      opacity: (this.state.loadedList || this.state.loading) ? ".5" : 1
+    };
+    const text = this.state.loading ? "loading..." : "load articles!";
+
+    return <p>
+      <button onClick={this.clickHandler()} style={style} disabled={this.state.loadedList || this.state.loading}>{text}</button>
+    </p>
+  }
+
+  getArticles() {
+    return this.state.loadedList ? <ArticleList articles={this.state.articles} /> : <p>Articles aren't yet loaded</p>;
   }
 
   render() {
     return (
       <div>
-        <ArticleList articles = {this.state.articles} />
+        {this.getButton()}
+        {this.getArticles()}
       </div>
     );
-  }
-
-  change() {
-    this.setState({
-      articles: articlesStore.getAll()
-    })
   }
 
 }

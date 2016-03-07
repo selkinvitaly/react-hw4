@@ -1,4 +1,4 @@
-It's the third homework for react course
+It's the fourth homework for react course
 
 This build uses [gulp 4 version](https://github.com/gulpjs/gulp/tree/4.0), so you need to install it:
 ```sh
@@ -7,15 +7,13 @@ npm i -g gulpjs/gulp#4.0
 
 # Usage
 
-The development build:
+Start server for the rest API:
 ```sh
-npm run build:dev
+npm run server
 ```
-The production build:
-```sh
-npm run build:prod
+
 ```
-The development build with the webpack-dev-server start:
+Start webpack-dev-server for building:
 ```sh
 npm run watch
 ```

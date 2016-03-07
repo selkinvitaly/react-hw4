@@ -2,7 +2,6 @@
 
 import React, {Component, PropTypes} from "react";
 import Article from "../Article/";
-// import Article from "../ArticleOld/";
 
 class ArticleList extends Component {
 
@@ -20,7 +19,7 @@ class ArticleList extends Component {
   }
 
   selectArticle(id) {
-    let newState = this.state;
+    let newState = Object.assign({}, this.state);
 
     newState.selected[id] = !newState.selected[id];
     this.setState(newState);
@@ -30,10 +29,9 @@ class ArticleList extends Component {
     return this.props.articles.map(item =>
       <Article
         key={item.id}
-        hint={item.hint}
         article={item}
         selectHandler={this.selectHandler(item.id)}
-        selected={this.state.selected[item.id]}
+        selected={!!this.state.selected[item.id]}
       />
     );
   }
@@ -45,7 +43,7 @@ class ArticleList extends Component {
 }
 
 ArticleList.propTypes = {
-  articles: PropTypes.array
+  articles: PropTypes.array.isRequired
 };
 
 export default ArticleList;

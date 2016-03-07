@@ -1,48 +1,30 @@
 "use strict";
 
-import React, {Component, PropTypes} from "react";
+import React, { Component, PropTypes } from "react";
 import Comment from "../Comment/";
-import { addComment } from "../../actions/comments";
+import * as actions from "../../actions/comments";
+import { commentsStore } from "../../stores/";
 
 class CommentList extends Component {
 
   constructor() {
     super();
+
     this.state = {
       showed: false
     };
-  }
 
-  toggleHandler() {
-    return e => {
-      e.preventDefault();
-      this.toggleComments();
-    };
-  }
-
-  toggleComments() {
-    this.setState({
-      showed: !this.state.showed
-    });
   }
 
   addCommentHandler() {
     return e => {
       e.preventDefault();
-      addComment(this.props.articleId, this.refs["input"].value || "");
+      actions.addComment(this.props.articleId, this.refs["input"].value || "");
     };
   }
 
-  getShowedStyle() {
-    return this.state.showed ? null : { display: "none" };
-  }
-
-  getEmptyStyle() {
-    return { display: !this.props.comments.length ? "none" : "block" }
-  }
-
-  getComments() {
-    return this.props.comments.map(comment => <Comment key={comment.id} text={comment.text} />);
+  showError(err) {
+    alert(err);
   }
 
   getForm() {
@@ -69,26 +51,69 @@ class CommentList extends Component {
     };
 
     return <form onSubmit={this.addCommentHandler()}>
-      <input ref="input" style={inputStyles} type="text" placeholder="Enter your comment" />
+      <input ref="input" style={inputStyles} type="text" placeholder="Enter your comment" required />
       <input style={submitStyles} type="submit" value="Submit" />
     </form>;
   }
 
+  clickHandler() {
+    return e => {
+      e.preventDefault();
+
+      if (commentsStore.isEmpty()) {
+        actions.getComments();
+      }
+
+      this.toggleComments();
+    };
+
+  }
+
+  toggleComments() {
+    this.setState({
+      showed: !this.state.showed
+    });
+  }
+
+  getButton() {
+    const text = this.state.showed ? "hide comments" : "show comments";
+
+    return <p>
+      <a onClick={this.clickHandler()} href="#">{`${text} [${this.props.comments.length}]`}</a>
+    </p>;
+  }
+
+  getComments() {
+    if (commentsStore.isEmpty()) {
+      return <p>Loading...</p>;
+    }
+
+    let comments = commentsStore.getCommentsByArticleId(this.props.articleId);
+
+    return <ul>{ comments.map(comment => <Comment key={comment.id} comment={comment} />) }</ul>;
+  }
+
+  getBody() {
+    const style = !this.state.showed ? { display: "none" } : null;
+
+    return <div style={style}>
+      {this.getComments()}
+      {this.getForm()}
+    </div>
+  }
+
   render() {
     return <div>
-      <p style={this.getEmptyStyle()}><a onClick={this.toggleHandler()} href="#">show comments</a></p>
-      <ul style={this.getShowedStyle()}>
-        {this.getComments()}
-      </ul>
-      {this.getForm()}
+      {this.getButton()}
+      {this.getBody()}
     </div>
   }
 
 }
 
 CommentList.propTypes = {
-  comments: PropTypes.array,
-  articleId: PropTypes.number
+  articleId: PropTypes.number.isRequired,
+  comments: PropTypes.array.isRequired
 };
 
 export default CommentList;

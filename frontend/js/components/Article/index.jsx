@@ -1,12 +1,19 @@
 "use strict";
 
-import React, {Component, PropTypes} from "react";
-import CommentList from "../CommentList/";
-import HOCtoggle from "../../HOC/toggleArticle/";
-import HOChint from "../../HOC/hintArticle/";
-import { deleteArticle } from "../../actions/articles";
+import React, { Component, PropTypes } from "react";
+import CommentList from "../CommentList";
+import * as actions from "../../actions/articles";
+import { commentsStore } from "../../stores/";
 
 class Article extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      showed: false
+    };
+
+  }
 
   selectHandler() {
     return e => {
@@ -15,67 +22,72 @@ class Article extends Component {
     };
   }
 
-  getSelectedStyle() {
-    return this.props.selected ? { color: "brown" } : null;
+  deleteHandler() {
+    return e => {
+      e.preventDefault();
+      actions.deleteArticle(this.props.article.id);
+    };
   }
 
-  getShowedStyle() {
-    return this.props.showed ? null : { display: "none" };
+  toggleArticle() {
+    this.setState({
+      showed: !this.state.showed
+    });
+  }
+
+  clickHandler() {
+    return e => {
+
+      if (!this.props.article.text) {
+        actions.getArticle(this.props.article.id);
+      }
+
+      this.toggleArticle();
+    };
   }
 
   getTitle() {
-    return <h2 onClick={this.props.toggleHandler} style={this.getSelectedStyle()}>
+    const style = this.props.selected ? { color: "brown" } : null;
+
+    return <h2 onClick={this.clickHandler()} style={style}>
       {this.props.article.title}
     </h2>
   }
 
-  deleteHandler() {
-    return e => {
-      e.preventDefault();
-      deleteArticle(this.props.article.id);
-    };
+  getComments() {
+    return <CommentList articleId={this.props.article.id} comments={this.props.article.comments || []} />;
+  }
+
+  getText() {
+    const text = this.props.article.text || "text is loading...";
+
+    return <p>{text}</p>;
   }
 
   getBody() {
-    return <div>
-        <p><a href="#" onClick={this.deleteHandler()}>delete article</a></p>
-        <p>{this.props.article.body}</p>
-      </div>;
-  }
+    const style = !this.state.showed ? { display: "none" } : null;
 
-  getComments() {
-    return <CommentList articleId={this.props.article.id} comments={this.props.article.getRelation("comments")} />;
+    return <div style={style}>
+      <p><a href="#" onClick={this.deleteHandler()}>delete article</a></p>
+      <p><a href="#" onClick={this.selectHandler()}>select article</a></p>
+      {this.getText()}
+      {this.getComments()}
+    </div>
   }
 
   render() {
-    return (
-      <li
-        onMouseEnter={this.props.showHintHandler}
-        onMouseLeave={this.props.hideHintHandler}
-        style={{position: "relative"}}
-      >
-        {this.props.getHint(this.props.hint)}
-        {this.getTitle()}
-        <div style={this.getShowedStyle()}>
-          {this.getBody()}
-          <p><a onClick={this.selectHandler()} href="#">select</a></p>
-          {this.getComments()}
-        </div>
-      </li>
-    );
+    return <li>
+      {this.getTitle()}
+      {this.getBody()}
+    </li>
   }
 
 }
 
 Article.propTypes = {
-  article: PropTypes.object,
-  selectHandler: PropTypes.func,
-  toggleHandler: PropTypes.func,
-  getHint: PropTypes.func,
-  hideHintHandler: PropTypes.func,
-  showHintHandler: PropTypes.func,
-  showed: PropTypes.bool,
-  selected: PropTypes.bool
+  article: PropTypes.object.isRequired,
+  selectHandler: PropTypes.func.isRequired,
+  selected: PropTypes.bool.isRequired
 };
 
-export default HOChint(HOCtoggle(Article));
+export default Article;

@@ -1,7 +1,11 @@
 "use strict";
 
 import BaseStore from "./BaseStore";
-import { ADD_COMMENT } from "../consts";
+import {
+  ACT_ADD_COMMENT,
+  ACT_LOAD_ALL_COMMENTS_OK,
+  ACT_LOAD_ALL_COMMENTS_FAIL
+} from "../consts/actions";
 import AppDispatcher from "../dispatcher";
 
 class CommentStore extends BaseStore {
@@ -10,42 +14,48 @@ class CommentStore extends BaseStore {
     super(...args);
 
     AppDispatcher.register(action => {
-      const { type, data } = action;
+      const { type, action:data } = action;
 
       switch (type) {
-        case ADD_COMMENT:
-
-          let nextId  = this.getNextIndex();
-          let article = this.getArticleByArticleId(data.articleId);
+        case ACT_ADD_COMMENT:
+          let timeStamp = new Date().toString();
+          let commentId = +new Date();
+          let text = data.text;
+          let user = data.user || "guest";
+          let articleId = data.articleId;
+          let article = this._stores.articles.getById(articleId);
 
           article.comments = article.comments || [];
-          article.comments.push(nextId);
+          article.comments.push(commentId);
 
           this.add({
-            id: nextId,
-            text: data.text
+            id: commentId,
+            text: text,
+            user: user,
+            timeStamp: timeStamp,
+            article: articleId
           });
-          // this.emitChange();
+          this._stores.articles.updateArticles();
+          break;
+
+        case ACT_LOAD_ALL_COMMENTS_OK:
+          data.comments.forEach(this.add.bind(this));
+          this._stores.articles.updateArticles();
+          break;
+
+        case ACT_LOAD_ALL_COMMENTS_FAIL:
+          this.errorLoading(data.err);
           break;
       }
     });
   }
 
-  getNextIndex() {
-    return this._items[this._items.length - 1].id + 1;
+  isEmpty() {
+    return this._items.length === 0;
   }
 
-  getArticleByArticleId(articleId) {
-    let store = this._stores.articles;
-
-    for (let i = 0, len = store._items.length; i < len; i++) {
-      let article = store._items[i];
-
-      if (article.id === articleId) {
-        return article;
-      }
-
-    }
+  getCommentsByArticleId(articleId) {
+    return this._items.filter(comment => comment.article === articleId);
   }
 
 }

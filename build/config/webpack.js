@@ -55,7 +55,7 @@ module.exports = function(root) {
         {
           test: /\.jsx?$/,
           include: path.join(root, "./frontend/js/"),
-          loader: "babel?presets[]=react,presets[]=es2015,plugins[]=transform-runtime"
+          loader: "babel?presets[]=react,presets[]=es2015,presets[]=stage-0,plugins[]=transform-runtime"
         },
         {
           test: /\.styl$/,
