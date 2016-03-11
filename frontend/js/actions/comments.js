@@ -13,7 +13,7 @@ export function addComment(articleId, text) {
     action: { articleId, text }
   });
 };
-
+//я давал API /api/comment?article=${articleId} а вы грузите сразу все возможные комменты
 export function getComments() {
   const url = "api/comment/";
 
